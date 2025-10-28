@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * HonyRun 响应式系统 - 测试环境日志配置
+ * 
+ * @author Mr.Rey Copyright © 2025
+ * @created 2025-07-01  15:30:00
+ * @modified 2025-07-01 15:30:00
+ * @version 2.0.0
+ * @description 测试环境专用的Logback日志配置，提供详细的测试日志输出和格式化
+ * @note 此配置仅在测试环境中生效，支持响应式架构的日志记录
+-->
+<configuration>
+    
+    <!-- 定义日志输出格式 - TraceId由LoggingUtil统一处理 -->
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+    <property name="TEST_LOG_PATTERN" value="%d{HH:mm:ss.SSS} [%thread] %-5level %logger{20} - %msg%n"/>
+    
+    <!-- 控制台输出配置 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${TEST_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    
+    <!-- 测试日志文件输出配置 -->
+    <appender name="TEST_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/honyrun-test.log</file>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/honyrun-test.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>100MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+    
+    <!-- 响应式测试专用日志文件 -->
+    <appender name="REACTIVE_TEST_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/reactive-test.log</file>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/reactive-test.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxFileSize>5MB</maxFileSize>
+            <maxHistory>3</maxHistory>
+            <totalSizeCap>50MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+    
+    <!-- 性能测试日志文件 -->
+    <appender name="PERFORMANCE_TEST_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/performance-test.log</file>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/performance-test.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>5</maxHistory>
+            <totalSizeCap>200MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+    
+    <!-- 集成测试日志文件 -->
+    <appender name="INTEGRATION_TEST_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/integration-test.log</file>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/integration-test.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxFileSize>15MB</maxFileSize>
+            <maxHistory>3</maxHistory>
+            <totalSizeCap>100MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+    
+    <!-- 异步日志输出配置 -->
+    <appender name="ASYNC_TEST_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold>
+        <queueSize>512</queueSize>
+        <appender-ref ref="TEST_FILE"/>
+    </appender>
+    
+    <!-- HonyRun项目包日志配置 -->
+    <logger name="com.honyrun" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ASYNC_TEST_FILE"/>
+    </logger>
+    
+    <!-- 响应式测试专用日志配置 -->
+    <logger name="com.honyrun.reactive" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="REACTIVE_TEST_FILE"/>
+    </logger>
+    
+    <!-- 性能测试专用日志配置 -->
+    <logger name="com.honyrun.performance" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="PERFORMANCE_TEST_FILE"/>
+    </logger>
+    
+    <!-- 集成测试专用日志配置 -->
+    <logger name="com.honyrun.integration" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="INTEGRATION_TEST_FILE"/>
+    </logger>
+    
+    <!-- Spring框架日志配置 -->
+    <logger name="org.springframework" level="INFO"/>
+    <logger name="org.springframework.web" level="DEBUG"/>
+    <logger name="org.springframework.security" level="INFO"/>
+    <logger name="org.springframework.data.r2dbc" level="INFO"/>
+    <logger name="org.springframework.boot.test" level="INFO"/>
+    
+    <!-- 响应式框架日志配置 -->
+    <logger name="reactor" level="INFO"/>
+    <logger name="reactor.netty" level="INFO"/>
+    <logger name="io.r2dbc" level="WARN"/>
+    
+    <!-- 测试框架日志配置 -->
+    <logger name="org.junit" level="INFO"/>
+    <logger name="org.testcontainers" level="INFO"/>
+    <logger name="org.mockito" level="WARN"/>
+    
+    <!-- Redis测试日志配置 -->
+    <logger name="io.lettuce" level="WARN"/>
+    <logger name="org.springframework.data.redis" level="INFO"/>
+    
+    <!-- 数据库测试日志配置 -->
+    <logger name="io.r2dbc.mysql" level="INFO"/>
+    <logger name="com.zaxxer.hikari" level="INFO"/>
+    
+    <!-- HTTP客户端测试日志配置 -->
+    <logger name="org.springframework.web.reactive.function.client" level="DEBUG"/>
+    <logger name="org.springframework.test.web.reactive.server" level="DEBUG"/>
+    
+    <!-- 安全审计日志配置 -->
+    <appender name="SECURITY_AUDIT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/security-audit.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/security-audit.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+    
+    <logger name="SECURITY_AUDIT" level="INFO" additivity="false">
+        <appender-ref ref="SECURITY_AUDIT_FILE"/>
+    </logger>
+    
+    <!-- 根日志配置 -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ASYNC_TEST_FILE"/>
+    </root>
+    
+    <!-- 测试环境特殊配置 -->
+    <springProfile name="test">
+        <!-- 测试环境下启用更详细的日志 -->
+        <logger name="com.honyrun" level="TRACE"/>
+        <logger name="reactor.core" level="DEBUG"/>
+        <logger name="org.springframework.web.reactive" level="TRACE"/>
+    </springProfile>
+    
+</configuration>
+

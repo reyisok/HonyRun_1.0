@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+HonyRun WebFlux响应式系统统一日志配置
+@author: Mr.Rey Copyright © 2025
+@created: 2025-06-28
+@modified: 2025-01-13 16:57:03
+@version: 1.0.3 - 整合监控日志功能
+-->
+<configuration>
+    <springProperty name="ACTIVE_PROFILES" source="spring.profiles.active"/>
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+    <!-- 移除Spring Boot默认配置引用，避免%clr和%wEx转换器错误 -->
+
+    <!-- 定义日志文件路径 -->
+    <!-- 
+    重要说明：日志路径配置必须使用相对路径 "logs"，不能使用 "backend/logs"
+    应用启动目录为 backend/，使用 "backend/logs" 会导致日志写入到 backend/backend/logs/ 错误路径
+    正确路径应为：backend/logs/
+    @author: Mr.Rey Copyright © 2025
+    @modified: 2025-10-23 16:57:03
+    -->
+    <springProfile name="dev,honyrun-dev">
+    <property name="LOG_PATH" value="logs"/>
+    <property name="LOG_FILE" value="honyrun-dev"/>
+    <property name="CONSOLE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [env:dev] ${PID:- } --- [%15.15t] %-40.40logger{39} : %m%n"/>
+    <property name="FILE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [env:dev] %logger{50} - %msg%n"/>
+    </springProfile>
+
+    <springProfile name="prod">
+        <property name="LOG_PATH" value="${LOG_PATH:-/var/log/honyrun}"/>
+        <property name="LOG_FILE" value="honyrun-prod"/>
+        <property name="CONSOLE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [env:prod] ${PID:- } --- [%15.15t] %-40.40logger{39} : %m%n"/>
+        <property name="FILE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [env:prod] %logger{50} - %msg%n"/>
+    </springProfile>
+
+    <springProfile name="test,honyrun-test">
+    <property name="LOG_PATH" value="logs"/>
+    <property name="LOG_FILE" value="honyrun-test"/>
+    <property name="CONSOLE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [env:test] ${PID:- } --- [%15.15t] %-40.40logger{39} : %m%n"/>
+    <property name="FILE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [env:test] %logger{50} - %msg%n"/>
+    </springProfile>
+
+    <!-- 定义日志格式 -->
+    <!-- pattern definitions are overridden per profile above; removed default env:%property{ACTIVE_PROFILES} to avoid null -->
+
+    <!-- 控制台输出配置 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <!-- 阈值过滤改由root/logger级别控制，移除appender内的springProfile嵌套以消除警告 -->
+    </appender>
+
+    <!-- 应用日志 -->
+    <appender name="APPLICATION_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${LOG_FILE}.log</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 错误日志 -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${LOG_FILE}-error.log</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE}-error.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!-- 编译日志单独输出 -->
+    <appender name="FILE_COMPILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${LOG_FILE}-compile.log</file>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE}-compile.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>200MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 系统监控专用日志 - 性能监控 -->
+    <appender name="MONITORING_PERFORMANCE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/monitoring/performance.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/monitoring/performance.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>15</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 系统监控专用日志 - 健康检查 -->
+    <appender name="MONITORING_HEALTH_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/monitoring/health.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/monitoring/health.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>30MB</maxFileSize>
+            <maxHistory>15</maxHistory>
+            <totalSizeCap>500MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 系统监控专用日志 - 资源使用 -->
+    <appender name="MONITORING_RESOURCE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/monitoring/resource.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/monitoring/resource.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>15</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 系统监控专用日志 - 告警信息 -->
+    <appender name="MONITORING_ALERT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/monitoring/alert.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/monitoring/alert.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>30MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 系统监控专用日志 - 系统事件 -->
+    <appender name="MONITORING_SYSTEM_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/monitoring/system.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/monitoring/system.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 安全审计日志单独输出 -->
+    <appender name="FILE_SECURITY_AUDIT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${LOG_FILE}-security-audit.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE}-security-audit.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>2GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <!-- 异步日志配置 -->
+    <appender name="ASYNC_APPLICATION" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="APPLICATION_FILE"/>
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <neverBlock>true</neverBlock>
+    </appender>
+
+    <appender name="ASYNC_ERROR" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="ERROR_FILE"/>
+        <queueSize>512</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>true</includeCallerData>
+        <neverBlock>false</neverBlock>
+    </appender>
+
+    <!-- 监控日志记录器配置 -->
+    <logger name="MONITORING.PERFORMANCE" level="INFO" additivity="false">
+        <appender-ref ref="MONITORING_PERFORMANCE_FILE"/>
+    </logger>
+
+    <!-- 兼容旧性能日志分类（LoggingUtil使用的“PERFORMANCE”名称） -->
+    <logger name="PERFORMANCE" level="INFO" additivity="false">
+        <appender-ref ref="MONITORING_PERFORMANCE_FILE"/>
+    </logger>
+
+    <logger name="MONITORING.HEALTH" level="INFO" additivity="false">
+        <appender-ref ref="MONITORING_HEALTH_FILE"/>
+    </logger>
+
+    <logger name="MONITORING.RESOURCE" level="INFO" additivity="false">
+        <appender-ref ref="MONITORING_RESOURCE_FILE"/>
+    </logger>
+
+    <logger name="MONITORING.ALERT" level="INFO" additivity="false">
+        <appender-ref ref="MONITORING_ALERT_FILE"/>
+    </logger>
+
+    <logger name="MONITORING.SYSTEM" level="INFO" additivity="false">
+        <appender-ref ref="MONITORING_SYSTEM_FILE"/>
+    </logger>
+
+    <!-- 编译相关日志 -->
+    <logger name="compile" level="INFO" additivity="false">
+        <appender-ref ref="FILE_COMPILE"/>
+    </logger>
+
+    <!-- 安全审计日志 -->
+    <logger name="SECURITY_AUDIT" level="INFO" additivity="false">
+        <appender-ref ref="FILE_SECURITY_AUDIT"/>
+    </logger>
+
+    <!-- HonyRun应用日志 -->
+    <logger name="com.honyrun" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ASYNC_APPLICATION"/>
+        <appender-ref ref="ASYNC_ERROR"/>
+    </logger>
+
+    <!-- Spring WebFlux日志 -->
+    <springProfile name="dev,test,honyrun-dev">
+        <logger name="org.springframework.web.reactive" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_APPLICATION"/>
+        </logger>
+    </springProfile>
+    <springProfile name="prod">
+        <logger name="org.springframework.web.reactive" level="WARN" additivity="false">
+            <appender-ref ref="ASYNC_APPLICATION"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </logger>
+    </springProfile>
+
+    <!-- R2DBC数据库日志 -->
+    <springProfile name="dev,test,honyrun-dev">
+        <logger name="io.r2dbc" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_APPLICATION"/>
+        </logger>
+        <logger name="org.springframework.data.r2dbc" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_APPLICATION"/>
+        </logger>
+    </springProfile>
+    <springProfile name="prod">
+        <logger name="io.r2dbc" level="WARN" additivity="false">
+            <appender-ref ref="ASYNC_APPLICATION"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </logger>
+        <logger name="org.springframework.data.r2dbc" level="WARN" additivity="false">
+            <appender-ref ref="ASYNC_APPLICATION"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </logger>
+    </springProfile>
+
+    <!-- Redis日志 -->
+    <springProfile name="dev,test,honyrun-dev">
+        <logger name="org.springframework.data.redis" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_APPLICATION"/>
+        </logger>
+    </springProfile>
+    <springProfile name="prod">
+        <logger name="org.springframework.data.redis" level="WARN" additivity="false">
+            <appender-ref ref="ASYNC_APPLICATION"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </logger>
+    </springProfile>
+
+    <!-- Netty网络日志 - 优化连接池日志输出 -->
+    <springProfile name="dev,test,honyrun-dev">
+        <logger name="reactor.netty" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_APPLICATION"/>
+        </logger>
+        <!-- 特别控制连接池日志，避免过多的连接状态变化日志 -->
+        <logger name="reactor.netty.resources.DefaultPooledConnectionProvider" level="WARN" additivity="false">
+            <appender-ref ref="ASYNC_APPLICATION"/>
+        </logger>
+    </springProfile>
+    <springProfile name="prod">
+        <logger name="reactor.netty" level="WARN" additivity="false">
+            <appender-ref ref="ASYNC_APPLICATION"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </logger>
+        <logger name="reactor.netty.resources.DefaultPooledConnectionProvider" level="ERROR" additivity="false">
+            <appender-ref ref="ASYNC_APPLICATION"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </logger>
+    </springProfile>
+
+    <!-- Spring Security日志 -->
+    <springProfile name="dev,test,honyrun-dev">
+        <logger name="org.springframework.security" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_APPLICATION"/>
+        </logger>
+    </springProfile>
+    <springProfile name="prod">
+        <logger name="org.springframework.security" level="WARN" additivity="false">
+            <appender-ref ref="ASYNC_APPLICATION"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </logger>
+    </springProfile>
+
+    <!-- 数据库初始化日志配置 - 同步到主日志 -->
+    <springProfile name="dev,test,honyrun-dev">
+        <logger name="org.springframework.boot.sql.init" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_APPLICATION"/>
+        </logger>
+        <logger name="org.springframework.jdbc.datasource.init" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_APPLICATION"/>
+        </logger>
+        <logger name="org.springframework.r2dbc.connection.init" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_APPLICATION"/>
+        </logger>
+    </springProfile>
+    <springProfile name="prod">
+        <logger name="org.springframework.boot.sql.init" level="INFO" additivity="false">
+            <appender-ref ref="ASYNC_APPLICATION"/>
+        </logger>
+        <logger name="org.springframework.jdbc.datasource.init" level="INFO" additivity="false">
+            <appender-ref ref="ASYNC_APPLICATION"/>
+        </logger>
+        <logger name="org.springframework.r2dbc.connection.init" level="INFO" additivity="false">
+            <appender-ref ref="ASYNC_APPLICATION"/>
+        </logger>
+    </springProfile>
+
+    <!-- 第三方库日志级别控制 -->
+    <logger name="org.apache.http" level="WARN"/>
+    <logger name="org.springframework.boot.autoconfigure" level="WARN"/>
+    <logger name="org.springframework.boot.context" level="WARN"/>
+    <logger name="org.hibernate.validator" level="WARN"/>
+
+    <!-- Redis连接相关日志级别优化 - 减少连接中断异常日志噪音 -->
+    <logger name="org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory" level="WARN"/>
+    <logger name="io.lettuce.core.protocol.AsyncCommand" level="WARN"/>
+    <logger name="io.lettuce.core.RedisCommandInterruptedException" level="WARN"/>
+    <logger name="io.lettuce.core.internal.Futures" level="WARN"/>
+    <logger name="io.lettuce.core.FutureSyncInvocationHandler" level="WARN"/>
+
+    <!-- 根日志配置 -->
+    <springProfile name="dev,test,honyrun-dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_APPLICATION"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
+        <root level="WARN">
+            <appender-ref ref="ASYNC_APPLICATION"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </root>
+    </springProfile>
+
+    <!-- 启动日志 -->
+     <appender name="STARTUP_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+         <file>${LOG_PATH}/${LOG_FILE}-spring-startup.log</file>
+         <encoder>
+             <pattern>${FILE_LOG_PATTERN}</pattern>
+             <charset>UTF-8</charset>
+         </encoder>
+         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+             <fileNamePattern>${LOG_PATH}/${LOG_FILE}-spring-startup.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+             <maxFileSize>50MB</maxFileSize>
+             <maxHistory>14</maxHistory>
+             <totalSizeCap>1GB</totalSizeCap>
+         </rollingPolicy>
+     </appender>
+
+     <!-- Spring Boot启动日志分类 -->
+    <springProfile name="dev,test,honyrun-dev">
+        <logger name="org.springframework.boot" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="STARTUP_FILE"/>
+        </logger>
+    </springProfile>
+     <springProfile name="prod">
+         <logger name="org.springframework.boot" level="INFO" additivity="false">
+             <appender-ref ref="STARTUP_FILE"/>
+         </logger>
+     </springProfile>
+
+     <!-- JMX监控配置 -->
+     <!-- removed: jmxConfigurator unsupported in logback 1.4 -->
+
+ </configuration>
+

@@ -1,0 +1,880 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- 项目基本信息 -->
+    <groupId>com.honyrun</groupId>
+    <artifactId>honyrun-reactive</artifactId>
+    <version>2.0.0</version>
+    <packaging>jar</packaging>
+    <name>HonyRunReactiveSystem</name>
+    <description>基于Spring WebFlux的响应式业务支撑平台</description>
+
+    <!-- 项目属性配置 -->
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- Spring Boot版本 - 3.5.7 最新版本-->
+        <spring-boot.version>3.5.7</spring-boot.version>
+
+        <!-- JWT版本 -->
+        <jjwt.version>0.12.6</jjwt.version>
+
+        <!-- Redis Lettuce版本 - 支持Redis 8.0 -->
+        <lettuce.version>6.8.0.RELEASE</lettuce.version>
+
+        <!-- Maven插件版本 -->
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>3.0.0-M9</maven-surefire-plugin.version>
+
+    </properties>
+
+    <!-- Spring Boot依赖管理 -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- Spring Boot WebFlux响应式Web框架 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <!-- Spring Boot R2DBC响应式数据访问 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-r2dbc</artifactId>
+        </dependency>
+
+        <!-- R2DBC连接池 -->
+        <dependency>
+            <groupId>io.r2dbc</groupId>
+            <artifactId>r2dbc-pool</artifactId>
+        </dependency>
+
+        <!-- MariaDB R2DBC驱动 - 生产环境 -->
+        <dependency>
+            <groupId>org.mariadb</groupId>
+            <artifactId>r2dbc-mariadb</artifactId>
+        </dependency>
+
+        <!-- MySQL R2DBC驱动 - 生产环境 -->
+        <dependency>
+            <groupId>io.asyncer</groupId>
+            <artifactId>r2dbc-mysql</artifactId>
+        </dependency>
+
+        <!-- Apache Commons Pool2 - Redis连接池依赖 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+
+        <!-- Spring Boot Redis响应式支持 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
+        </dependency>
+
+        <!-- Lettuce Redis客户端 - 显式指定版本以支持Redis 8.0 -->
+        <dependency>
+            <groupId>io.lettuce</groupId>
+            <artifactId>lettuce-core</artifactId>
+            <version>${lettuce.version}</version>
+        </dependency>
+
+        <!-- Spring Boot Security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- JWT API -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+
+        <!-- JWT实现 -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- JWT Jackson序列化 -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Spring Boot Validation -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- Spring Boot Actuator - 监控端点 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Micrometer Prometheus - 监控指标 -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
+        <!-- SpringDoc OpenAPI - Swagger文档支持 -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+
+        <!-- SpringDoc OpenAPI Security -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-common</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+
+        <!-- Spring Boot配置处理器 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Spring Boot AOP - AspectJ支持 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- AspectJ运行时 -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+        </dependency>
+
+        <!-- AspectJ编织器 -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+        </dependency>
+
+        <!-- 测试依赖 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 响应式测试支持 -->
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
+
+        <!-- Spring Security测试支持 -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- JMH基准测试框架 -->
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>1.37</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- JMH注解处理器 -->
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>1.37</version>
+            <scope>test</scope>
+        </dependency>
+
+
+
+
+
+
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Spring Boot Maven插件 -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+                <configuration>
+                    <mainClass>com.honyrun.HonyRunReactiveApplication</mainClass>
+                    <executable>true</executable>
+                    <jvmArguments>-Dspring.profiles.active=dev</jvmArguments>
+                    <profiles>
+                        <profile>dev</profile>
+                    </profiles>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Maven编译插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                    <encoding>UTF-8</encoding>
+                    <showWarnings>true</showWarnings>
+                    <showDeprecation>true</showDeprecation>
+                    <parameters>true</parameters>
+                    <failOnWarning>false</failOnWarning>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                        <arg>-Xlint:unchecked</arg>
+                        <arg>-Xlint:deprecation</arg>
+                        <arg>-Xlint:unused</arg>
+                        <arg>-XX:+TieredCompilation</arg>
+                        <arg>-XX:TieredStopAtLevel=4</arg>
+                    </compilerArgs>
+                    <!-- 32GB环境启用并行编译 -->
+                    <fork>true</fork>
+                    <meminitial>2048m</meminitial>
+                    <maxmem>4096m</maxmem>
+                </configuration>
+                <executions>
+                    <!-- 主代码编译 -->
+                    <execution>
+                        <id>default-compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <showWarnings>true</showWarnings>
+                            <showDeprecation>true</showDeprecation>
+                            <compilerArgs>
+                                <arg>-Xlint:all</arg>
+                                <arg>-Xlint:-options</arg>
+                                <arg>-Xlint:-processing</arg>
+                                <arg>-parameters</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                    <!-- 测试代码编译，包含JMH注解处理 -->
+                    <execution>
+                        <id>default-testCompile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <configuration>
+                            <showWarnings>true</showWarnings>
+                            <showDeprecation>true</showDeprecation>
+                            <failOnWarning>false</failOnWarning>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>org.openjdk.jmh</groupId>
+                                    <artifactId>jmh-generator-annprocess</artifactId>
+                                    <version>1.37</version>
+                                </path>
+                            </annotationProcessorPaths>
+                            <generatedTestSourcesDirectory>${project.build.directory}/generated-test-sources/test-annotations</generatedTestSourcesDirectory>
+                            <compilerArgs>
+                                <arg>-parameters</arg>
+                                <arg>-proc:full</arg>
+                            </compilerArgs>
+                            <testExcludes>
+                                <exclude>**/util/version/VersionManagerTest.java</exclude>
+                            </testExcludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Maven Exec插件 - 用于运行JMH基准测试 -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>org.openjdk.jmh.Main</mainClass>
+                    <classpathScope>test</classpathScope>
+                </configuration>
+                <executions>
+                    <!-- Bean验证执行 - 暂时禁用，等待编译完成后再启用 -->
+                    <!--
+                    <execution>
+                        <id>bean-validation</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>com.honyrun.config.validation.BeanValidationMavenPlugin</mainClass>
+                            <classpathScope>compile</classpathScope>
+                            <systemProperties>
+                                <systemProperty>
+                                    <key>spring.profiles.active</key>
+                                    <value>test</value>
+                                </systemProperty>
+                                <systemProperty>
+                                    <key>logging.level.com.honyrun</key>
+                                    <value>INFO</value>
+                                </systemProperty>
+                            </systemProperties>
+                        </configuration>
+                    </execution>
+                    -->
+                </executions>
+            </plugin>
+
+            <!-- Maven测试插件 - 使用IDE默认配置，按最佳实践优化 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                        <include>**/*IntegrationTest.java</include>
+                    </includes>
+                    <excludes>
+                        <!-- 排除E2E测试，由Failsafe插件执行 -->
+                        <exclude>**/*E2ETest.java</exclude>
+                        <!-- 排除JMH生成的测试源码 -->
+                        <exclude>**/jmh_generated/**</exclude>
+                        <exclude>**/generated-test-sources/**</exclude>
+                        <!-- 排除调试类目录 -->
+                        <exclude>**/debug/**</exclude>
+                        <!-- 排除非测试类文件 -->
+                        <exclude>**/annotation/**</exclude>
+                        <exclude>**/base/Base*.java</exclude>
+                        <exclude>**/config/Test*.java</exclude>
+                        <exclude>**/config/WebFlux*.java</exclude>
+                        <exclude>**/contract/BaseContractTest.java</exclude>
+                        <exclude>**/util/TestDataFactory.java</exclude>
+                        <exclude>**/util/TestDataCleaner.java</exclude>
+                        <exclude>**/util/MockFactory.java</exclude>
+                        <exclude>**/testsupport/**</exclude>
+                        <exclude>**/monitoring/TestMonitoringService.java</exclude>
+                        <exclude>**/reporting/TestReportGenerator.java</exclude>
+                        <exclude>**/optimization/TestExecutionOptimizer.java</exclude>
+                        <exclude>**/alerting/TestAlertingService.java</exclude>
+                        <exclude>**/automation/package-info.java</exclude>
+                        <exclude>**/optimization/package-info.java</exclude>
+                        <exclude>**/e2e/package-info.java</exclude>
+                        <exclude>**/contract/package-info.java</exclude>
+                        <exclude>**/handler/*Template.java</exclude>
+                        <exclude>**/router/*Template.java</exclude>
+                        <!-- 排除工具类测试 -->
+                        <exclude>**/util/generate_password.java</exclude>
+                        <exclude>**/util/GenerateCorrectHashes.java</exclude>
+                        <exclude>**/util/PasswordHashVerifier.java</exclude>
+                        <exclude>**/util/TestO123Hash.java</exclude>
+                        <exclude>**/util/TestPasswordHash.java</exclude>
+                        <exclude>**/util/TestSnowflakeIds.java</exclude>
+                        <exclude>**/util/TestUserIdResolver.java</exclude>
+                    </excludes>
+                    <systemPropertyVariables>
+                        <spring.profiles.active>test</spring.profiles.active>
+                    </systemPropertyVariables>
+                    <!-- 使用IDE默认JVM配置，移除自定义argLine -->
+                    <argLine>${argLine}</argLine>
+                    <useManifestOnlyJar>false</useManifestOnlyJar>
+                    <forkCount>1</forkCount>
+                    <reuseForks>true</reuseForks>
+                    <forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
+                    <shutdown>kill</shutdown>
+                    <properties>
+                        <property>
+                            <name>java.awt.headless</name>
+                            <value>true</value>
+                        </property>
+                    </properties>
+                </configuration>
+            </plugin>
+
+            <!-- Maven故障安全插件 - 集成测试 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.0.0-M9</version>
+                <configuration>
+                    <includes>
+                        <!-- 仅执行E2E测试 -->
+                        <include>**/*E2ETest.java</include>
+                        <!-- 移除IT测试，由Surefire执行 -->
+                        <!-- <include>**/*IT.java</include> -->
+                    </includes>
+                    <excludes>
+                        <!-- 排除调试类目录 -->
+                        <exclude>**/debug/**</exclude>
+                        <!-- 排除性能类测试目录（临时稳定CI） -->
+                        <exclude>**/performance/**</exclude>
+                    </excludes>
+                    <systemPropertyVariables>
+                        <spring.profiles.active>test</spring.profiles.active>
+                    </systemPropertyVariables>
+                    <!-- 32GB内存环境优化的JVM参数 - 集成测试 -->
+                    <argLine>${argLine} -Xmx12g -Xms6g -XX:+UseG1GC -XX:MaxGCPauseMillis=100 -XX:+UseStringDeduplication -XX:MaxMetaspaceSize=2g -XX:G1HeapRegionSize=32m -XX:+UseCompressedOops -XX:+UseCompressedClassPointers -XX:+TieredCompilation -XX:CompileThreshold=8000 -Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+                    <useManifestOnlyJar>false</useManifestOnlyJar>
+                    <!-- 优化Fork配置以减少内存压力 -->
+                    <forkCount>1</forkCount>
+                    <reuseForks>true</reuseForks>
+                    <!-- 增加集成测试超时时间 -->
+                    <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
+                    <!-- 增加内存不足时的处理 -->
+                    <shutdown>kill</shutdown>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- JaCoCo代码覆盖率插件 -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.11</version>
+                <configuration>
+                    <excludes>
+                        <!-- 排除配置类和启动类 -->
+                        <exclude>**/config/**</exclude>
+                        <exclude>**/HonyRunReactiveApplication.class</exclude>
+                        <!-- 排除DTO和实体类 -->
+                        <exclude>**/dto/**</exclude>
+                        <exclude>**/entity/**</exclude>
+                        <!-- 排除常量类 -->
+                        <exclude>**/constants/**</exclude>
+                        <!-- 排除JMH生成的测试源码 -->
+                        <exclude>**/jmh_generated/**</exclude>
+                        <exclude>**/generated-test-sources/**</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <destFile>${project.build.directory}/jacoco.exec</destFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>prepare-agent-integration</id>
+                        <goals>
+                            <goal>prepare-agent-integration</goal>
+                        </goals>
+                        <configuration>
+                            <destFile>${project.build.directory}/jacoco-it.exec</destFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/jacoco.exec</dataFile>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>report-integration</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>report-integration</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/jacoco-it.exec</dataFile>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-it</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>merge-results</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>merge</goal>
+                        </goals>
+                        <configuration>
+                            <fileSets>
+                                <fileSet>
+                                    <directory>${project.build.directory}</directory>
+                                    <includes>
+                                        <include>*.exec</include>
+                                    </includes>
+                                </fileSet>
+                            </fileSets>
+                            <destFile>${project.build.directory}/jacoco-merged.exec</destFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>merged-report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-merged</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+                            <rules>
+                                <!-- 全局覆盖率阈值：LINE >= 80% -->
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.80</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                                <!-- 安全关键包覆盖率阈值：LINE >= 85% -->
+                                <rule>
+                                    <element>PACKAGE</element>
+                                    <includes>
+                                        <include>com.honyrun.security.*</include>
+                                    </includes>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.85</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Build Helper Maven插件 - 版本管理 -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.4.0</version>
+                <executions>
+                    <execution>
+                        <id>increment-build-version</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>timestamp-property</goal>
+                        </goals>
+                        <configuration>
+                            <name>build.timestamp</name>
+                            <pattern>yyyy-MM-dd HH:mm:ss</pattern>
+                            <timeZone>Asia/Shanghai</timeZone>
+                            <locale>en_US</locale>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+
+
+            <!-- SpotBugs Maven插件 - 静态代码分析 -->
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.8.2.0</version>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>Low</threshold>
+                    <xmlOutput>true</xmlOutput>
+                    <spotbugsXmlOutputDirectory>${project.build.directory}/spotbugs</spotbugsXmlOutputDirectory>
+                    <failOnError>false</failOnError>
+                    <skip>false</skip>
+                    <excludeFilterFile>config/spotbugs-exclude.xml</excludeFilterFile>
+                    <!-- 禁用网络检查，避免依赖下载问题 -->
+                    <onlyAnalyze>com.honyrun.-</onlyAnalyze>
+                </configuration>
+                <!-- 移除自动执行，改为手动执行 -->
+                <executions>
+                    <!-- 注释掉自动执行，避免构建时的网络依赖问题 -->
+                    <!--
+                    <execution>
+                        <id>spotbugs-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                    -->
+                </executions>
+            </plugin>
+
+            <!-- PMD Maven插件 - 代码质量检查 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.21.2</version>
+                <configuration>
+                    <targetJdk>21</targetJdk>
+                    <rulesets>
+                        <ruleset>/category/java/bestpractices.xml</ruleset>
+                        <ruleset>/category/java/codestyle.xml</ruleset>
+                        <ruleset>/category/java/design.xml</ruleset>
+                        <ruleset>/category/java/errorprone.xml</ruleset>
+                        <ruleset>/category/java/performance.xml</ruleset>
+                        <ruleset>/category/java/security.xml</ruleset>
+                    </rulesets>
+                    <failOnViolation>false</failOnViolation>
+                    <printFailingErrors>true</printFailingErrors>
+                    <skip>false</skip>
+                </configuration>
+                <!-- 移除自动执行，改为手动执行 -->
+                <executions>
+                    <!-- 注释掉自动执行，避免构建时的检查问题 -->
+                    <!--
+                    <execution>
+                        <id>pmd-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                    -->
+                </executions>
+            </plugin>
+
+            <!-- Checkstyle Maven插件 - 代码风格检查 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <configLocation>config/checkstyle.xml</configLocation>
+                    <encoding>UTF-8</encoding>
+                    <consoleOutput>true</consoleOutput>
+                    <failsOnError>false</failsOnError>
+                    <linkXRef>false</linkXRef>
+                    <skip>false</skip>
+                </configuration>
+                <!-- 移除自动执行，改为手动执行 -->
+                <executions>
+                    <!-- 注释掉自动执行，避免构建时的检查问题 -->
+                    <!--
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                    -->
+                </executions>
+            </plugin>
+
+            <!-- Maven Site插件 - 生成项目站点 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>4.0.0-M13</version>
+                <configuration>
+                    <locales>zh_CN</locales>
+                </configuration>
+            </plugin>
+
+            <!-- Maven Project Info Reports插件 - 项目信息报告 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>3.4.5</version>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- 报告插件配置 -->
+    <reporting>
+        <plugins>
+            <!-- Maven Surefire Report插件 - 测试报告 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
+
+            <!-- JaCoCo Report插件 - 代码覆盖率报告 -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.11</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>report</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+
+            <!-- SpotBugs Report插件 -->
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.8.2.0</version>
+            </plugin>
+
+            <!-- PMD Report插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.21.2</version>
+            </plugin>
+
+            <!-- Checkstyle Report插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.3.1</version>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>checkstyle</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+
+            <!-- Maven Javadoc插件 - API文档 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.6.3</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <charset>UTF-8</charset>
+                    <docencoding>UTF-8</docencoding>
+                    <locale>zh_CN</locale>
+                    <failOnError>false</failOnError>
+                    <additionalJOptions>
+                        <additionalJOption>-J-Duser.language=zh</additionalJOption>
+                        <additionalJOption>-J-Duser.country=CN</additionalJOption>
+                    </additionalJOptions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <!-- 开发者信息 -->
+    <developers>
+        <developer>
+            <id>reyiosk</id>
+            <name>Mr.Rey</name>
+            <email>reyiosk@example.com</email>
+            <organization>HonyRun</organization>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
+            <timezone>+8</timezone>
+        </developer>
+    </developers>
+
+    <!-- 项目信息 -->
+    <organization>
+        <name>HonyRun</name>
+        <url>https://github.com/reyiosk</url>
+    </organization>
+
+    <scm>
+        <connection>scm:git:https://github.com/reyiosk/HonyRun.git</connection>
+        <developerConnection>scm:git:https://github.com/reyiosk/HonyRun.git</developerConnection>
+        <url>https://github.com/reyiosk/HonyRun</url>
+</scm>
+    <!-- CI专用Profiles：用于在CI环境中只运行核心测试套件 -->
+    <profiles>
+        <profile>
+            <id>ci-core-tests</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>${maven-surefire-plugin.version}</version>
+                        <configuration>
+                            <includes>
+                                <include>**/*Test.java</include>
+                                <include>**/*Tests.java</include>
+                            </includes>
+                            <excludes>
+                                <!-- 在CI中排除调试与性能相关测试 -->
+                                <exclude>**/debug/**</exclude>
+                                <exclude>**/performance/**</exclude>
+                                <exclude>**/*Debug*.java</exclude>
+                                <exclude>**/*Benchmark*.java</exclude>
+                                <!-- 仍旧排除JMH生成代码 -->
+                                <exclude>**/jmh_generated/**</exclude>
+                                <exclude>**/generated-test-sources/**</exclude>
+                            </excludes>
+                            <systemPropertyVariables>
+                                <spring.profiles.active>test</spring.profiles.active>
+                            </systemPropertyVariables>
+                            <forkCount>1</forkCount>
+                            <reuseForks>true</reuseForks>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
